@@ -1,0 +1,158 @@
+import React, { useState, useMemo } from "react";
+import { useSearchParams } from "react-router";
+import { PRODUCTS } from "../data/products";
+import { ProductCard } from "../components/ProductCard";
+import { Search, Filter, SlidersHorizontal, ChevronDown } from "lucide-react";
+import { motion, AnimatePresence } from "motion/react";
+
+const CATEGORIES = ["All", "Tubers & Grains", "Fresh Vegetables", "Proteins", "Spices & Seasonings"] as const;
+
+export const Products: React.FC = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [sortBy, setSortBy] = useState("Popularity");
+
+  const activeCategory = searchParams.get("category") || "All";
+  const searchQuery = searchParams.get("search") || "";
+
+  const filteredProducts = useMemo(() => {
+    return PRODUCTS.filter((product) => {
+      const matchesCategory = activeCategory === "All" || product.category === activeCategory;
+      const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          product.description.toLowerCase().includes(searchQuery.toLowerCase());
+      return matchesCategory && matchesSearch;
+    }).sort((a, b) => {
+      if (sortBy === "Price: Low to High") return a.price - b.price;
+      if (sortBy === "Price: High to Low") return b.price - a.price;
+      if (sortBy === "Rating") return b.rating - a.rating;
+      return 0; // Default
+    });
+  }, [activeCategory, searchQuery, sortBy]);
+
+  const handleCategoryChange = (category: string) => {
+    const params = new URLSearchParams(searchParams);
+    if (category === "All") {
+      params.delete("category");
+    } else {
+      params.set("category", category);
+    }
+    setSearchParams(params);
+  };
+
+  return (
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
+        <div>
+          <h1 className="text-4xl text-gray-900 mb-2">Farm Fresh Ingredients</h1>
+          <p className="text-gray-600">
+            {filteredProducts.length} products available {searchQuery && `for "${searchQuery}"`}
+          </p>
+        </div>
+
+        <div className="flex items-center space-x-4">
+          <div className="relative group">
+            <button
+              onClick={() => setIsFilterOpen(!isFilterOpen)}
+              className="flex items-center space-x-2 bg-white border-2 border-emerald-200 px-4 py-2.5 rounded-xl text-sm hover:border-emerald-600 transition-colors"
+            >
+              <SlidersHorizontal className="w-4 h-4" />
+              <span>Sort: {sortBy}</span>
+              <ChevronDown className="w-4 h-4" />
+            </button>
+            <AnimatePresence>
+              {isFilterOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 10 }}
+                  className="absolute right-0 mt-2 w-48 bg-white border-2 border-emerald-100 rounded-xl shadow-xl z-20 py-2"
+                >
+                  {["Popularity", "Rating", "Price: Low to High", "Price: High to Low"].map((option) => (
+                    <button
+                      key={option}
+                      onClick={() => {
+                        setSortBy(option);
+                        setIsFilterOpen(false);
+                      }}
+                      className={`w-full text-left px-4 py-2 text-sm hover:bg-emerald-50 hover:text-emerald-700 transition-colors ${
+                        sortBy === option ? "text-emerald-700 bg-emerald-50" : "text-gray-600"
+                      }`}
+                    >
+                      {option}
+                    </button>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        </div>
+      </div>
+
+      {/* Category Tabs */}
+      <div className="flex items-center space-x-2 mb-12 overflow-x-auto pb-4 no-scrollbar">
+        {CATEGORIES.map((cat) => (
+          <button
+            key={cat}
+            onClick={() => handleCategoryChange(cat)}
+            className={`px-6 py-3 rounded-full text-sm whitespace-nowrap transition-all ${
+              activeCategory === cat
+                ? "bg-emerald-700 text-white shadow-lg shadow-emerald-200"
+                : "bg-white border-2 border-emerald-200 text-gray-700 hover:border-emerald-600 hover:text-emerald-700"
+            }`}
+          >
+            {cat}
+          </button>
+        ))}
+      </div>
+
+      {/* Product Grid */}
+      {filteredProducts.length > 0 ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+          {filteredProducts.map((product) => (
+            <motion.div
+              key={product.id}
+              layout
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.3 }}
+            >
+              <ProductCard product={product} />
+            </motion.div>
+          ))}
+        </div>
+      ) : (
+        <div className="text-center py-20 bg-white rounded-3xl border-2 border-emerald-100">
+          <div className="bg-emerald-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
+            <Search className="w-10 h-10 text-emerald-300" />
+          </div>
+          <h3 className="text-2xl text-gray-900 mb-2">No products found</h3>
+          <p className="text-gray-600 mb-8 max-w-sm mx-auto">
+            We couldn't find any ingredients matching your search or filters. Try adjusting them or clear everything.
+          </p>
+          <button
+            onClick={() => {
+              setSearchParams({});
+              setSortBy("Popularity");
+            }}
+            className="bg-emerald-700 text-white px-8 py-3 rounded-full hover:bg-emerald-800 transition-colors"
+          >
+            Clear All Filters
+          </button>
+        </div>
+      )}
+
+      {/* Recommended Section (Mobile only visible) */}
+      <div className="md:hidden mt-20">
+         <h2 className="text-2xl mb-6">You might also like</h2>
+         <div className="flex space-x-4 overflow-x-auto pb-6 no-scrollbar">
+            {PRODUCTS.slice(4, 8).map(p => (
+              <div key={p.id} className="min-w-[280px]">
+                <ProductCard product={p} />
+              </div>
+            ))}
+         </div>
+      </div>
+    </div>
+  );
+};
