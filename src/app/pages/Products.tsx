@@ -1,8 +1,8 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useRef, useEffect } from "react";
 import { useSearchParams } from "react-router";
 import { PRODUCTS } from "../data/products";
 import { ProductCard } from "../components/ProductCard";
-import { Search, Filter, SlidersHorizontal, ChevronDown } from "lucide-react";
+import { Search, SlidersHorizontal, ChevronDown } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
 const CATEGORIES = ["All", "Tubers & Grains", "Fresh Vegetables", "Proteins", "Spices & Seasonings"] as const;
@@ -11,21 +11,34 @@ export const Products: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [sortBy, setSortBy] = useState("Popularity");
+  const filterRef = useRef<HTMLDivElement>(null);
 
   const activeCategory = searchParams.get("category") || "All";
   const searchQuery = searchParams.get("search") || "";
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (filterRef.current && !filterRef.current.contains(e.target as Node)) {
+        setIsFilterOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
   const filteredProducts = useMemo(() => {
     return PRODUCTS.filter((product) => {
       const matchesCategory = activeCategory === "All" || product.category === activeCategory;
-      const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          product.description.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesSearch =
+        product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        product.description.toLowerCase().includes(searchQuery.toLowerCase());
       return matchesCategory && matchesSearch;
     }).sort((a, b) => {
       if (sortBy === "Price: Low to High") return a.price - b.price;
       if (sortBy === "Price: High to Low") return b.price - a.price;
       if (sortBy === "Rating") return b.rating - a.rating;
-      return 0; // Default
+      return 0;
     });
   }, [activeCategory, searchQuery, sortBy]);
 
@@ -51,9 +64,9 @@ export const Products: React.FC = () => {
         </div>
 
         <div className="flex items-center space-x-4">
-          <div className="relative group">
+          <div ref={filterRef} className="relative">
             <button
-              onClick={() => setIsFilterOpen(!isFilterOpen)}
+              onClick={() => setIsFilterOpen((prev) => !prev)}
               className="flex items-center space-x-2 bg-white border-2 border-emerald-200 px-4 py-2.5 rounded-xl text-sm hover:border-emerald-600 transition-colors"
             >
               <SlidersHorizontal className="w-4 h-4" />
@@ -142,16 +155,16 @@ export const Products: React.FC = () => {
         </div>
       )}
 
-      {/* Recommended Section (Mobile only visible) */}
+      {/* Recommended Section (mobile only) */}
       <div className="md:hidden mt-20">
-         <h2 className="text-2xl mb-6">You might also like</h2>
-         <div className="flex space-x-4 overflow-x-auto pb-6 no-scrollbar">
-            {PRODUCTS.slice(4, 8).map(p => (
-              <div key={p.id} className="min-w-[280px]">
-                <ProductCard product={p} />
-              </div>
-            ))}
-         </div>
+        <h2 className="text-2xl mb-6">You might also like</h2>
+        <div className="flex space-x-4 overflow-x-auto pb-6 no-scrollbar">
+          {PRODUCTS.slice(4, 8).map((p) => (
+            <div key={p.id} className="min-w-[280px]">
+              <ProductCard product={p} />
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

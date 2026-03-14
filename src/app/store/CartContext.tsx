@@ -10,18 +10,32 @@ interface CartContextType {
   clearCart: () => void;
   totalItems: number;
   totalPrice: number;
+  vat: number;
+  grandTotal: number;
 }
+
+
+export const DELIVERY_FEE = 1500;
+export const VAT_RATE = 0.075;
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [cart, setCart] = useState<CartItem[]>(() => {
-    const saved = localStorage.getItem("oja_fresh_cart");
-    return saved ? JSON.parse(saved) : [];
+    try {
+      const saved = localStorage.getItem("oja_fresh_cart");
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
   });
 
   useEffect(() => {
-    localStorage.setItem("oja_fresh_cart", JSON.stringify(cart));
+    try {
+      localStorage.setItem("oja_fresh_cart", JSON.stringify(cart));
+    } catch {
+      // quota exceeded or sandboxed — silently ignore
+    }
   }, [cart]);
 
   const addToCart = (product: Product, quantity: number = 1) => {
@@ -63,6 +77,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const totalItems = cart.reduce((acc, item) => acc + item.quantity, 0);
   const totalPrice = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
+  const vat = totalPrice * VAT_RATE;
+  const grandTotal = totalPrice + DELIVERY_FEE + vat;
 
   return (
     <CartContext.Provider
@@ -74,6 +90,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         clearCart,
         totalItems,
         totalPrice,
+        vat,
+        grandTotal,
       }}
     >
       {children}

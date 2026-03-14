@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Link, useNavigate } from "react-router";
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate, useLocation } from "react-router";
 import { ShoppingCart, Search, User, Menu, X, Leaf } from "lucide-react";
 import { useCart } from "../store/CartContext";
 import { motion, AnimatePresence } from "motion/react";
@@ -9,12 +9,18 @@ export const Navbar: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Clear search input whenever the route changes
+  useEffect(() => {
+    setSearchQuery("");
+    setIsMenuOpen(false);
+  }, [location.pathname]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      navigate(`/products?search=${searchQuery}`);
-      setIsMenuOpen(false);
+      navigate(`/products?search=${encodeURIComponent(searchQuery.trim())}`);
     }
   };
 
@@ -77,7 +83,7 @@ export const Navbar: React.FC = () => {
               )}
             </Link>
             <button
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              onClick={() => setIsMenuOpen((prev) => !prev)}
               className="text-gray-600 focus:outline-none"
             >
               {isMenuOpen ? <X className="w-7 h-7" /> : <Menu className="w-7 h-7" />}
@@ -107,12 +113,12 @@ export const Navbar: React.FC = () => {
                 <Search className="absolute left-3 top-2.5 w-5 h-5 text-emerald-600" />
               </form>
               <div className="flex flex-col space-y-4">
-                <Link to="/" onClick={() => setIsMenuOpen(false)} className="text-gray-700 hover:text-emerald-700">Home</Link>
-                <Link to="/products" onClick={() => setIsMenuOpen(false)} className="text-gray-700 hover:text-emerald-700">All Products</Link>
-                <Link to="/products?category=Tubers%20%26%20Grains" onClick={() => setIsMenuOpen(false)} className="text-gray-700 hover:text-emerald-700">Tubers & Grains</Link>
-                <Link to="/products?category=Fresh%20Vegetables" onClick={() => setIsMenuOpen(false)} className="text-gray-700 hover:text-emerald-700">Fresh Vegetables</Link>
-                <Link to="/products?category=Proteins" onClick={() => setIsMenuOpen(false)} className="text-gray-700 hover:text-emerald-700">Proteins</Link>
-                <Link to="/products?category=Spices%20%26%20Seasonings" onClick={() => setIsMenuOpen(false)} className="text-gray-700 hover:text-emerald-700">Spices & Seasonings</Link>
+                <Link to="/"                                              className="text-gray-700 hover:text-emerald-700">Home</Link>
+                <Link to="/products"                                      className="text-gray-700 hover:text-emerald-700">All Products</Link>
+                <Link to="/products?category=Tubers%20%26%20Grains"      className="text-gray-700 hover:text-emerald-700">Tubers & Grains</Link>
+                <Link to="/products?category=Fresh%20Vegetables"         className="text-gray-700 hover:text-emerald-700">Fresh Vegetables</Link>
+                <Link to="/products?category=Proteins"                   className="text-gray-700 hover:text-emerald-700">Proteins</Link>
+                <Link to="/products?category=Spices%20%26%20Seasonings"  className="text-gray-700 hover:text-emerald-700">Spices & Seasonings</Link>
                 <div className="pt-4 border-t border-emerald-100">
                   <button className="flex items-center space-x-2 text-gray-700">
                     <User className="w-5 h-5 text-gray-400" />

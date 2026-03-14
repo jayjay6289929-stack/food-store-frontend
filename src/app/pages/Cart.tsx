@@ -1,12 +1,12 @@
 import React from "react";
 import { Link, useNavigate } from "react-router";
-import { useCart } from "../store/CartContext";
+import { useCart, DELIVERY_FEE } from "../store/CartContext";
 import { Trash2, ShoppingBag, ArrowRight, Minus, Plus, ChevronLeft } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { ImageWithFallback } from "../components/figma/ImageWithFallback";
 
 export const Cart: React.FC = () => {
-  const { cart, removeFromCart, updateQuantity, totalPrice, totalItems } = useCart();
+  const { cart, removeFromCart, updateQuantity, totalPrice, totalItems, vat, grandTotal } = useCart();
   const navigate = useNavigate();
 
   const formatPrice = (price: number) => {
@@ -16,9 +16,6 @@ export const Cart: React.FC = () => {
       minimumFractionDigits: 0,
     }).format(price);
   };
-
-  const deliveryFee = 1500;
-  const grandTotal = totalPrice + deliveryFee;
 
   if (cart.length === 0) {
     return (
@@ -110,7 +107,7 @@ export const Cart: React.FC = () => {
           </Link>
         </div>
 
-        {/* Summary Card */}
+        {/* Summary Card — uses the same computed values as Checkout */}
         <div className="w-full lg:w-96">
           <div className="bg-white p-8 rounded-[2.5rem] border-2 border-emerald-100 shadow-2xl sticky top-24">
             <h2 className="text-2xl text-gray-900 mb-8">Order Summary</h2>
@@ -121,30 +118,30 @@ export const Cart: React.FC = () => {
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-gray-600">Estimated Delivery</span>
-                <span className="text-gray-900">{formatPrice(deliveryFee)}</span>
+                <span className="text-gray-900">{formatPrice(DELIVERY_FEE)}</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-gray-600">Taxes & Charges (7.5% VAT)</span>
-                <span className="text-gray-900">{formatPrice(totalPrice * 0.075)}</span>
+                <span className="text-gray-600">VAT (7.5%)</span>
+                <span className="text-gray-900">{formatPrice(vat)}</span>
               </div>
             </div>
 
             <div className="flex justify-between items-center mb-10">
               <span className="text-lg text-gray-900">Total</span>
-              <span className="text-2xl text-emerald-700">{formatPrice(grandTotal + (totalPrice * 0.075))}</span>
+              <span className="text-2xl text-emerald-700">{formatPrice(grandTotal)}</span>
             </div>
 
             <div className="space-y-4">
-               <button
-                 onClick={() => navigate('/checkout')}
-                 className="w-full bg-emerald-700 hover:bg-emerald-800 text-white py-5 rounded-2xl shadow-xl shadow-emerald-200 transition-all flex items-center justify-center space-x-3 text-lg"
-               >
-                 <span>Secure Checkout</span>
-                 <ArrowRight className="w-6 h-6" />
-               </button>
-               <p className="text-[10px] text-gray-500 text-center px-4 leading-relaxed">
-                 By proceeding, you agree to our Terms of Service and Privacy Policy. Delivery is currently limited to Lagos, Abuja, and Port Harcourt.
-               </p>
+              <button
+                onClick={() => navigate('/checkout')}
+                className="w-full bg-emerald-700 hover:bg-emerald-800 text-white py-5 rounded-2xl shadow-xl shadow-emerald-200 transition-all flex items-center justify-center space-x-3 text-lg"
+              >
+                <span>Secure Checkout</span>
+                <ArrowRight className="w-6 h-6" />
+              </button>
+              <p className="text-[10px] text-gray-500 text-center px-4 leading-relaxed">
+                By proceeding, you agree to our Terms of Service and Privacy Policy. Delivery is currently limited to Lagos, Abuja, and Port Harcourt.
+              </p>
             </div>
           </div>
         </div>

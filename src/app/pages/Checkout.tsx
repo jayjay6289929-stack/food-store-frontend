@@ -1,16 +1,22 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useCart } from "../store/CartContext";
 import { Link, useNavigate } from "react-router";
 import { ShieldCheck, MapPin, CreditCard, ChevronLeft, CheckCircle, Truck, PackageCheck, Smartphone } from "lucide-react";
-import { motion, AnimatePresence } from "motion/react";
-import { toast } from "sonner";
+import { motion } from "motion/react";
 import confetti from "canvas-confetti";
 
 export const Checkout: React.FC = () => {
-  const { cart, totalPrice, clearCart } = useCart();
+  const { cart, grandTotal, totalPrice, vat, clearCart } = useCart();
   const navigate = useNavigate();
   const [isOrdered, setIsOrdered] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("card");
+  const redirectTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (redirectTimer.current) clearTimeout(redirectTimer.current);
+    };
+  }, []);
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat("en-NG", {
@@ -20,20 +26,17 @@ export const Checkout: React.FC = () => {
     }).format(price);
   };
 
-  const deliveryFee = 1500;
-  const grandTotal = totalPrice + deliveryFee + (totalPrice * 0.075);
-
   const handleOrder = (e: React.FormEvent) => {
     e.preventDefault();
-    setIsOrdered(true);
+    setIsOrdered(true);   // must flip before clearCart so cart.length===0 guard doesn't fire
+    setTimeout(() => clearCart(), 0);  // defer one tick — isOrdered renders first
     confetti({
       particleCount: 150,
       spread: 70,
       origin: { y: 0.6 },
-      colors: ["#047857", "#f59e0b", "#ffffff"]
+      colors: ["#047857", "#f59e0b", "#ffffff"],
     });
-    setTimeout(() => {
-      clearCart();
+    redirectTimer.current = setTimeout(() => {
       navigate("/");
     }, 5000);
   };
@@ -94,7 +97,7 @@ export const Checkout: React.FC = () => {
       <div className="flex flex-col lg:flex-row gap-12">
         <div className="flex-1">
           <h1 className="text-4xl text-gray-900 mb-12">Checkout</h1>
-          
+
           <form onSubmit={handleOrder} className="space-y-12">
             {/* Delivery Details */}
             <section className="bg-white p-8 rounded-[2.5rem] border-2 border-emerald-100 shadow-sm">
@@ -106,28 +109,60 @@ export const Checkout: React.FC = () => {
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <label className="text-xs text-gray-500 uppercase tracking-widest px-1">Full Name</label>
-                  <input type="text" required placeholder="Adebayo Oluwaseun" className="w-full bg-emerald-50 border-2 border-emerald-200 rounded-2xl py-4 px-6 focus:outline-none focus:ring-2 focus:ring-emerald-600 text-gray-900" />
+                  <label htmlFor="fullName" className="text-xs text-gray-500 uppercase tracking-widest px-1">Full Name</label>
+                  <input
+                    id="fullName"
+                    name="fullName"
+                    type="text"
+                    required
+                    placeholder="Adebayo Oluwaseun"
+                    className="w-full bg-emerald-50 border-2 border-emerald-200 rounded-2xl py-4 px-6 focus:outline-none focus:ring-2 focus:ring-emerald-600 text-gray-900"
+                  />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs text-gray-500 uppercase tracking-widest px-1">Phone Number</label>
-                  <input type="tel" required placeholder="+234 800 000 0000" className="w-full bg-emerald-50 border-2 border-emerald-200 rounded-2xl py-4 px-6 focus:outline-none focus:ring-2 focus:ring-emerald-600 text-gray-900" />
+                  <label htmlFor="phone" className="text-xs text-gray-500 uppercase tracking-widest px-1">Phone Number</label>
+                  <input
+                    id="phone"
+                    name="phone"
+                    type="tel"
+                    required
+                    placeholder="+234 800 000 0000"
+                    className="w-full bg-emerald-50 border-2 border-emerald-200 rounded-2xl py-4 px-6 focus:outline-none focus:ring-2 focus:ring-emerald-600 text-gray-900"
+                  />
                 </div>
                 <div className="sm:col-span-2 space-y-2">
-                  <label className="text-xs text-gray-500 uppercase tracking-widest px-1">Delivery Address</label>
-                  <input type="text" required placeholder="Street address, Apartment, Building" className="w-full bg-emerald-50 border-2 border-emerald-200 rounded-2xl py-4 px-6 focus:outline-none focus:ring-2 focus:ring-emerald-600 text-gray-900" />
+                  <label htmlFor="address" className="text-xs text-gray-500 uppercase tracking-widest px-1">Delivery Address</label>
+                  <input
+                    id="address"
+                    name="address"
+                    type="text"
+                    required
+                    placeholder="Street address, Apartment, Building"
+                    className="w-full bg-emerald-50 border-2 border-emerald-200 rounded-2xl py-4 px-6 focus:outline-none focus:ring-2 focus:ring-emerald-600 text-gray-900"
+                  />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs text-gray-500 uppercase tracking-widest px-1">City</label>
-                  <select className="w-full bg-emerald-50 border-2 border-emerald-200 rounded-2xl py-4 px-6 focus:outline-none focus:ring-2 focus:ring-emerald-600 text-gray-900">
+                  <label htmlFor="city" className="text-xs text-gray-500 uppercase tracking-widest px-1">City</label>
+                  <select
+                    id="city"
+                    name="city"
+                    className="w-full bg-emerald-50 border-2 border-emerald-200 rounded-2xl py-4 px-6 focus:outline-none focus:ring-2 focus:ring-emerald-600 text-gray-900"
+                  >
                     <option>Lagos</option>
                     <option>Abuja</option>
                     <option>Port Harcourt</option>
                   </select>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs text-gray-500 uppercase tracking-widest px-1">State</label>
-                  <input type="text" required placeholder="Lagos State" className="w-full bg-emerald-50 border-2 border-emerald-200 rounded-2xl py-4 px-6 focus:outline-none focus:ring-2 focus:ring-emerald-600 text-gray-900" />
+                  <label htmlFor="state" className="text-xs text-gray-500 uppercase tracking-widest px-1">State</label>
+                  <input
+                    id="state"
+                    name="state"
+                    type="text"
+                    required
+                    placeholder="Lagos State"
+                    className="w-full bg-emerald-50 border-2 border-emerald-200 rounded-2xl py-4 px-6 focus:outline-none focus:ring-2 focus:ring-emerald-600 text-gray-900"
+                  />
                 </div>
               </div>
             </section>
@@ -142,9 +177,9 @@ export const Checkout: React.FC = () => {
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {[
-                  { id: "card", name: "Credit / Debit Card", icon: CreditCard },
-                  { id: "transfer", name: "Bank Transfer", icon: ShieldCheck },
-                  { id: "mobile", name: "USSD / Mobile Money", icon: Smartphone },
+                  { id: "card",     name: "Credit / Debit Card",    icon: CreditCard  },
+                  { id: "transfer", name: "Bank Transfer",           icon: ShieldCheck },
+                  { id: "mobile",   name: "USSD / Mobile Money",     icon: Smartphone  },
                 ].map((method) => (
                   <button
                     key={method.id}
@@ -175,7 +210,7 @@ export const Checkout: React.FC = () => {
           </form>
         </div>
 
-        {/* Order Review */}
+        {/* Order Review — uses same grandTotal from context */}
         <div className="w-full lg:w-[450px]">
           <div className="bg-white p-10 rounded-[3rem] border-2 border-emerald-100 shadow-2xl sticky top-24">
             <h2 className="text-2xl text-gray-900 mb-8">Order Review</h2>
@@ -203,11 +238,11 @@ export const Checkout: React.FC = () => {
               </div>
               <div className="flex justify-between items-center text-sm">
                 <span className="text-gray-500">Delivery Fee</span>
-                <span className="text-gray-900">{formatPrice(deliveryFee)}</span>
+                <span className="text-gray-900">{formatPrice(1500)}</span>
               </div>
               <div className="flex justify-between items-center text-sm">
                 <span className="text-gray-500">VAT (7.5%)</span>
-                <span className="text-gray-900">{formatPrice(totalPrice * 0.075)}</span>
+                <span className="text-gray-900">{formatPrice(vat)}</span>
               </div>
               <div className="flex justify-between items-center pt-4 border-t border-emerald-50 mt-4">
                 <span className="text-xl text-gray-900">Grand Total</span>
@@ -216,10 +251,10 @@ export const Checkout: React.FC = () => {
             </div>
 
             <div className="bg-emerald-50 p-6 rounded-3xl flex items-start space-x-4">
-               <ShieldCheck className="w-6 h-6 text-emerald-700 shrink-0 mt-0.5" />
-               <p className="text-xs text-emerald-900 leading-relaxed">
-                  Your payment is processed securely by Paystack. We do not store your card details on our servers.
-               </p>
+              <ShieldCheck className="w-6 h-6 text-emerald-700 shrink-0 mt-0.5" />
+              <p className="text-xs text-emerald-900 leading-relaxed">
+                Your payment is processed securely by Paystack. We do not store your card details on our servers.
+              </p>
             </div>
           </div>
         </div>

@@ -5,6 +5,13 @@ import { PRODUCTS } from "../data/products";
 import { ProductCard } from "../components/ProductCard";
 import { motion } from "motion/react";
 
+const featureStyles: Record<string, { bg: string; icon: string }> = {
+  emerald: { bg: "bg-emerald-50", icon: "text-emerald-700" },
+  green:   { bg: "bg-green-50",   icon: "text-green-700"   },
+  amber:   { bg: "bg-amber-50",   icon: "text-amber-700"   },
+  teal:    { bg: "bg-teal-50",    icon: "text-teal-700"    },
+};
+
 export const Home: React.FC = () => {
   const featuredProducts = PRODUCTS.slice(0, 4);
 
@@ -65,27 +72,30 @@ export const Home: React.FC = () => {
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           {[
-            { icon: Truck, title: "Same-Day Delivery", desc: "Fresh ingredients delivered within hours.", color: "emerald" },
-            { icon: Leaf, title: "100% Organic", desc: "No pesticides or artificial additives.", color: "green" },
-            { icon: ShieldCheck, title: "Quality Guaranteed", desc: "Farm-fresh or your money back.", color: "amber" },
-            { icon: Clock, title: "24/7 Support", desc: "We're here whenever you need us.", color: "teal" },
-          ].map((feature, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.1 }}
-              whileHover={{ y: -5 }}
-              className="bg-white p-6 rounded-2xl border-2 border-emerald-100 shadow-sm hover:shadow-md transition-all flex flex-col items-center text-center space-y-3"
-            >
-              <div className={`bg-${feature.color}-50 p-3 rounded-xl`}>
-                <feature.icon className={`w-6 h-6 text-${feature.color}-700`} />
-              </div>
-              <h3 className="text-gray-900">{feature.title}</h3>
-              <p className="text-sm text-gray-600">{feature.desc}</p>
-            </motion.div>
-          ))}
+            { icon: Truck,       title: "Same-Day Delivery", desc: "Fresh ingredients delivered within hours.", color: "emerald" },
+            { icon: Leaf,        title: "100% Organic",      desc: "No pesticides or artificial additives.",  color: "green"   },
+            { icon: ShieldCheck, title: "Quality Guaranteed",desc: "Farm-fresh or your money back.",          color: "amber"   },
+            { icon: Clock,       title: "24/7 Support",      desc: "We're here whenever you need us.",        color: "teal"    },
+          ].map((feature, i) => {
+            const styles = featureStyles[feature.color];
+            return (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1 }}
+                whileHover={{ y: -5 }}
+                className="bg-white p-6 rounded-2xl border-2 border-emerald-100 shadow-sm hover:shadow-md transition-all flex flex-col items-center text-center space-y-3"
+              >
+                <div className={`${styles.bg} p-3 rounded-xl`}>
+                  <feature.icon className={`w-6 h-6 ${styles.icon}`} />
+                </div>
+                <h3 className="text-gray-900">{feature.title}</h3>
+                <p className="text-sm text-gray-600">{feature.desc}</p>
+              </motion.div>
+            );
+          })}
         </div>
       </section>
 
@@ -99,9 +109,9 @@ export const Home: React.FC = () => {
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
           {[
-            { name: "Tubers & Grains", img: "https://images.unsplash.com/photo-1607786221722-a7cde2cdb5e5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxOaWdlcmlhbiUyMHlhbSUyMHR1YmVycyUyMGZyZXNofGVufDF8fHx8MTc3MzQ4ODI2M3ww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral", category: "Tubers & Grains" },
-            { name: "Fresh Vegetables", img: "https://images.unsplash.com/photo-1665315302321-46989ca7829a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxmYXJtJTIwZnJlc2glMjB2ZWdldGFibGVzfGVufDF8fHx8MTc3MzM4ODEzNnww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral", category: "Fresh Vegetables" },
-            { name: "Premium Proteins", img: "https://images.unsplash.com/photo-1674066620888-4878aad91094?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxmcmVzaCUyMGZpc2glMjBtYXJrZXR8ZW58MXx8fHwxNzczNDg4MjY0fDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral", category: "Proteins" },
+            { name: "Tubers & Grains",     img: "https://images.unsplash.com/photo-1607786221722-a7cde2cdb5e5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxOaWdlcmlhbiUyMHlhbSUyMHR1YmVycyUyMGZyZXNofGVufDF8fHx8MTc3MzQ4ODI2M3ww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral", category: "Tubers & Grains"     },
+            { name: "Fresh Vegetables",    img: "https://images.unsplash.com/photo-1665315302321-46989ca7829a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxmYXJtJTIwZnJlc2glMjB2ZWdldGFibGVzfGVufDF8fHx8MTc3MzM4ODEzNnww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral", category: "Fresh Vegetables"    },
+            { name: "Premium Proteins",    img: "https://images.unsplash.com/photo-1674066620888-4878aad91094?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxmcmVzaCUyMGZpc2glMjBtYXJrZXR8ZW58MXx8fHwxNzczNDg4MjY0fDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral", category: "Proteins"            },
             { name: "Spices & Seasonings", img: "https://images.unsplash.com/photo-1758745464235-ccb8c1253074?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx0cmFkaXRpb25hbCUyMEFmcmljYW4lMjBzcGljZXN8ZW58MXx8fHwxNzczNDg4MjY4fDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral", category: "Spices & Seasonings" },
           ].map((cat, i) => (
             <Link
@@ -212,11 +222,11 @@ export const Home: React.FC = () => {
             </p>
           </div>
           <div className="hidden md:block relative z-10 mt-8 md:mt-0">
-             <img
-               src="https://images.unsplash.com/photo-1665315302321-46989ca7829a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxmYXJtJTIwZnJlc2glMjB2ZWdldGFibGVzfGVufDF8fHx8MTc3MzM4ODEzNnww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral"
-               alt="Fresh Vegetables"
-               className="w-80 h-80 object-cover rounded-3xl shadow-2xl rotate-3 border-4 border-white"
-             />
+            <img
+              src="https://images.unsplash.com/photo-1665315302321-46989ca7829a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxmYXJtJTIwZnJlc2glMjB2ZWdldGFibGVzfGVufDF8fHx8MTc3MzM4ODEzNnww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral"
+              alt="Fresh Vegetables"
+              className="w-80 h-80 object-cover rounded-3xl shadow-2xl rotate-3 border-4 border-white"
+            />
           </div>
         </div>
       </section>
